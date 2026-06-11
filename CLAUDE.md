@@ -54,10 +54,11 @@ El fichero tiene tres bloques secuenciales:
 - `"Proceso - Cierre de un proyecto"`
 - `"Personas"` — liderazgo, gestión del cambio organizacional (temas nuevos en la 7ª edición)
 - `"Examen de muestra 1"` — las 60 preguntas del examen de muestra oficial de PeopleCert (IDs 557–616), con respuestas y explicaciones de la clave oficial; todas con dificultad `medium`. Agrupado en el selector bajo "Exámenes oficiales".
+- `"Examen de muestra 2"` — las 60 preguntas del segundo examen de muestra oficial de PeopleCert (IDs 617–676), con respuestas y explicaciones de la clave oficial; todas con dificultad `medium`. Agrupado en el selector bajo "Exámenes oficiales".
 
 ## Banco de preguntas
 
-- **616 preguntas** (IDs del 1 al 616), en español
+- **676 preguntas** (IDs del 1 al 676), en español
 - Distribuidas entre easy / medium / hard
 - El selector de temas en la pantalla Home se genera desde `TOPIC_GROUPS` / `TOPIC_LABELS` (en el `<script>`): los temas nuevos requieren añadir el tema a un grupo y, opcionalmente, una etiqueta corta
 
