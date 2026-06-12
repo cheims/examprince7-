@@ -178,6 +178,11 @@
       margin-bottom: 20px;
     }
     .exam-header .progress-info { font-size: .88rem; opacity: .85; }
+    .exam-header .timer-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .exam-header .timer {
       font-size: 1.5rem;
       font-weight: 700;
@@ -186,6 +191,22 @@
     }
     .exam-header .timer.warning { color: #ffcc44; }
     .exam-header .timer.danger  { color: #ff6b6b; animation: pulse 1s infinite; }
+    .btn-timer-toggle {
+      background: rgba(255,255,255,.15);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background .2s;
+      flex-shrink: 0;
+    }
+    .btn-timer-toggle:hover { background: rgba(255,255,255,.3); }
+    .btn-timer-toggle svg { width: 16px; height: 16px; fill: #fff; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
 
     /* ── Progress bar ── */
@@ -473,7 +494,13 @@
         <div id="exam-progress-bar" class="progress-bar-fill" style="width:5%"></div>
       </div>
     </div>
-    <div id="exam-timer" class="timer">60:00</div>
+    <div class="timer-wrap">
+      <div id="exam-timer" class="timer">60:00</div>
+      <button id="btn-timer-toggle" class="btn-timer-toggle" onclick="toggleTimer()" title="Pausar temporizador">
+        <svg id="icon-pause" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <svg id="icon-play" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+    </div>
     <div style="text-align:right;">
       <div id="exam-diff-badge" class="pill"></div>
       <div style="font-size:.78rem;opacity:.7;margin-top:4px;" id="exam-score-live">Correctas: 0</div>
@@ -3616,6 +3643,7 @@ let state = {
   timerTotal: 3600,
   timerLeft: 3600,
   timerInterval: null,
+  timerPaused: false,
   started: null,
   showExpAfter: 'after', // 'after' | 'end'
   examId: null,
@@ -3770,6 +3798,10 @@ function startExam(savedExam) {
   state.current = 0;
   state.started = Date.now();
   state.timerLeft = state.timerTotal;
+  state.timerPaused = false;
+  document.getElementById('icon-pause').style.display = '';
+  document.getElementById('icon-play').style.display  = 'none';
+  document.getElementById('btn-timer-toggle').title   = 'Pausar temporizador';
 
   updateDiffBadge();
   showScreen('exam');
@@ -3803,9 +3835,37 @@ function stopTimer() {
   if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
 }
 
+function toggleTimer() {
+  state.timerPaused = !state.timerPaused;
+  if (state.timerPaused) {
+    stopTimer();
+  } else {
+    startTimer();
+  }
+  const btnToggle = document.getElementById('btn-timer-toggle');
+  const iconPause = document.getElementById('icon-pause');
+  const iconPlay  = document.getElementById('icon-play');
+  if (state.timerPaused) {
+    iconPause.style.display = 'none';
+    iconPlay.style.display  = '';
+    btnToggle.title = 'Reanudar temporizador';
+  } else {
+    iconPause.style.display = '';
+    iconPlay.style.display  = 'none';
+    btnToggle.title = 'Pausar temporizador';
+  }
+}
+
 function renderTimer() {
   const el = document.getElementById('exam-timer');
-  if (state.timerTotal === 0) { el.textContent = formatTime(Math.floor((Date.now() - state.started) / 1000)); el.className = 'timer'; return; }
+  const btn = document.getElementById('btn-timer-toggle');
+  if (state.timerTotal === 0) {
+    el.textContent = formatTime(Math.floor((Date.now() - state.started) / 1000));
+    el.className = 'timer';
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+  if (btn) btn.style.display = '';
   el.textContent = formatTime(state.timerLeft);
   const pct = state.timerLeft / state.timerTotal;
   el.className = 'timer' + (pct < 0.1 ? ' danger' : pct < 0.25 ? ' warning' : '');
