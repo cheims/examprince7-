@@ -345,6 +345,39 @@
     .pill-medium { background: #fff3e0; color: #c47d00; }
     .pill-hard { background: #fde8e6; color: #c0392b; }
 
+    /* ── Apuntes (galería) ── */
+    .notes-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    .notes-config { border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); padding:18px 20px; margin-bottom:20px; }
+    .notes-config .form-row { display:flex; gap:14px; flex-wrap:wrap; }
+    .notes-config .field { flex:1; min-width:160px; }
+    .notes-config input[type=text], .notes-config input[type=password] {
+      width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:7px;
+      font-size:.9rem; color:var(--text); background:var(--bg);
+    }
+    .notes-config input:focus { border-color:var(--primary-light); outline:none; }
+    .notes-hint { font-size:.78rem; color:var(--text-muted); margin-top:4px; line-height:1.4; }
+    .notes-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; }
+    .note-card {
+      border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+      background:var(--surface); cursor:pointer; transition:transform .12s, box-shadow .12s; display:flex; flex-direction:column;
+    }
+    .note-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+    .note-thumb { width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--bg); display:block; }
+    .note-meta { padding:9px 11px; display:flex; align-items:center; gap:8px; }
+    .note-order { flex-shrink:0; min-width:24px; height:24px; padding:0 6px; border-radius:6px; background:var(--primary); color:#fff; font-size:.78rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+    .note-title { font-size:.85rem; font-weight:600; color:var(--text); line-height:1.3; word-break:break-word; }
+    /* Lightbox */
+    .lightbox { position:fixed; inset:0; background:rgba(12,20,38,0.92); z-index:1000; display:none; align-items:center; justify-content:center; flex-direction:column; }
+    .lightbox.show { display:flex; }
+    .lightbox img { max-width:92vw; max-height:80vh; object-fit:contain; border-radius:8px; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+    .lightbox-caption { color:#fff; margin-top:14px; font-size:.95rem; font-weight:600; text-align:center; padding:0 20px; }
+    .lightbox-close { position:absolute; top:18px; right:22px; background:rgba(255,255,255,0.12); color:#fff; border:none; width:42px; height:42px; border-radius:50%; font-size:1.4rem; cursor:pointer; line-height:1; }
+    .lightbox-close:hover { background:rgba(255,255,255,0.25); }
+    .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); color:#fff; border:none; width:50px; height:50px; border-radius:50%; font-size:1.6rem; cursor:pointer; }
+    .lightbox-nav:hover { background:rgba(255,255,255,0.25); }
+    .lightbox-nav.prev { left:18px; }
+    .lightbox-nav.next { right:18px; }
+
     /* ── Toast ── */
     #toast {
       position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
@@ -377,6 +410,7 @@
   <nav>
     <button id="nav-home" class="active" onclick="showScreen('home')">Nuevo Examen</button>
     <button id="nav-history" onclick="showScreen('history')">Historial</button>
+    <button id="nav-notes" onclick="showScreen('notes')">Apuntes</button>
   </nav>
 </header>
 
@@ -571,6 +605,68 @@
     <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑 Borrar historial</button>
   </div>
   <div id="history-list"></div>
+</div>
+
+<!-- ══════════════ APUNTES ══════════════ -->
+<div id="screen-notes" class="screen">
+  <div class="notes-toolbar">
+    <div>
+      <h2>Mis Apuntes</h2>
+      <p class="subtitle" style="margin:0;">Fotos de tus apuntes guardadas en tu repositorio privado de GitHub. Se ordenan por el nombre del fichero.</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="toggleNotesConfig()">⚙ Configuración</button>
+      <button class="btn btn-primary btn-sm" onclick="fetchNotes()">🔄 Actualizar</button>
+    </div>
+  </div>
+
+  <div id="notes-config" class="notes-config" style="display:none;">
+    <h3>Conexión con GitHub</h3>
+    <p class="notes-hint" style="margin-top:-6px;margin-bottom:14px;">
+      Indica tu repositorio <strong>privado</strong> y un <strong>token de acceso personal (fine-grained)</strong> con permiso <em>Contents: Read-only</em> sobre ese repositorio. Todo se guarda solo en este navegador.
+    </p>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div class="field">
+        <label>Usuario / Organización (owner)</label>
+        <input type="text" id="notes-owner" placeholder="tu-usuario-github" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Repositorio</label>
+        <input type="text" id="notes-repo" placeholder="apuntes-prince2" autocomplete="off">
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:12px;">
+      <div class="field">
+        <label>Carpeta (opcional)</label>
+        <input type="text" id="notes-path" placeholder="p. ej. fotos  (vacío = raíz)" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Rama (opcional)</label>
+        <input type="text" id="notes-branch" placeholder="main" autocomplete="off">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label>Token de acceso personal</label>
+      <input type="password" id="notes-token" placeholder="github_pat_..." autocomplete="off">
+      <p class="notes-hint">Crea uno en GitHub → Settings → Developer settings → Fine-grained tokens. Solo lectura de contenido del repo.</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="saveNotesConfig()">💾 Guardar y cargar</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleNotesConfig()">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="notes-status"></div>
+  <div id="notes-gallery" class="notes-gallery"></div>
+</div>
+
+<!-- Visor a pantalla completa -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()" title="Cerrar (Esc)">✕</button>
+  <button class="lightbox-nav prev" onclick="navLightbox(event,-1)" title="Anterior (←)">‹</button>
+  <button class="lightbox-nav next" onclick="navLightbox(event,1)" title="Siguiente (→)">›</button>
+  <img id="lightbox-img" src="" alt="">
+  <div id="lightbox-caption" class="lightbox-caption"></div>
 </div>
 
 <div id="toast"></div>
@@ -3661,6 +3757,7 @@ function showScreen(name) {
   const navBtn = document.getElementById('nav-' + name);
   if (navBtn) navBtn.classList.add('active');
   if (name === 'history') renderHistory();
+  if (name === 'notes') initNotes();
 }
 
 function selectDiff(btn) {
@@ -4126,6 +4223,183 @@ function shuffle(arr) {
 }
 
 let toastTimeout;
+// ══════════════════════════════════════════════════════════
+//  APUNTES (galería desde repositorio privado de GitHub)
+// ══════════════════════════════════════════════════════════
+const NOTES_CFG_KEY = 'prince2_notes_config';
+const IMG_EXT = ['png','jpg','jpeg','gif','webp','bmp','svg'];
+// Valores por defecto cableados: así, aunque cambies de navegador, solo
+// tendrás que pegar el token una vez. El token NUNCA se cablea aquí, porque
+// este fichero se sube a GitHub y se filtraría.
+const NOTES_DEFAULTS = { owner: 'cheims', repo: 'apuntes-prince2', path: '', branch: '', token: '' };
+let notesItems = [];        // [{name, title, order, url}]
+let lightboxIndex = -1;
+let notesLoaded = false;
+
+function getNotesConfig() {
+  let stored = {};
+  try { stored = JSON.parse(localStorage.getItem(NOTES_CFG_KEY)) || {}; }
+  catch (e) { stored = {}; }
+  return { ...NOTES_DEFAULTS, ...stored };   // lo guardado tiene prioridad sobre los valores por defecto
+}
+
+function initNotes() {
+  const cfg = getNotesConfig();
+  // Rellena el formulario con lo guardado
+  if (cfg) {
+    document.getElementById('notes-owner').value = cfg.owner || '';
+    document.getElementById('notes-repo').value = cfg.repo || '';
+    document.getElementById('notes-path').value = cfg.path || '';
+    document.getElementById('notes-branch').value = cfg.branch || '';
+    document.getElementById('notes-token').value = cfg.token || '';
+  }
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    document.getElementById('notes-config').style.display = 'block';
+    const falta = !cfg.token ? 'Pega tu token de GitHub y pulsa «Guardar y cargar» para ver tus apuntes.'
+                             : 'Completa la configuración de GitHub para ver tus apuntes.';
+    setNotesStatus(falta, 'info');
+    return;
+  }
+  if (!notesLoaded) fetchNotes();
+}
+
+function toggleNotesConfig() {
+  const el = document.getElementById('notes-config');
+  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function saveNotesConfig() {
+  const cfg = {
+    owner: document.getElementById('notes-owner').value.trim(),
+    repo: document.getElementById('notes-repo').value.trim(),
+    path: document.getElementById('notes-path').value.trim().replace(/^\/+|\/+$/g, ''),
+    branch: document.getElementById('notes-branch').value.trim(),
+    token: document.getElementById('notes-token').value.trim()
+  };
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    showToast('Indica al menos owner, repositorio y token.');
+    return;
+  }
+  localStorage.setItem(NOTES_CFG_KEY, JSON.stringify(cfg));
+  document.getElementById('notes-config').style.display = 'none';
+  showToast('Configuración guardada');
+  fetchNotes();
+}
+
+// Deriva orden y título a partir del nombre del fichero
+function parseNoteName(filename) {
+  const base = filename.replace(/\.[^.]+$/, '');           // quita extensión
+  const m = base.match(/^\s*(\d+)\s*[-_.)]*\s*(.*)$/);      // número inicial = orden
+  let order = Infinity, title = base;
+  if (m && m[1]) { order = parseInt(m[1], 10); title = m[2] || base; }
+  title = title.replace(/[_]+/g, ' ').trim() || base;
+  return { order, title };
+}
+
+function setNotesStatus(msg, type) {
+  const el = document.getElementById('notes-status');
+  if (!msg) { el.innerHTML = ''; return; }
+  const color = type === 'error' ? 'var(--danger)' : 'var(--text-muted)';
+  el.innerHTML = `<div class="empty-state" style="color:${color};padding:30px 16px;">${msg}</div>`;
+}
+
+async function fetchNotes() {
+  const cfg = getNotesConfig();
+  if (!cfg || !cfg.owner || !cfg.repo || !cfg.token) {
+    document.getElementById('notes-config').style.display = 'block';
+    setNotesStatus('Falta configuración de GitHub.', 'info');
+    return;
+  }
+  document.getElementById('notes-gallery').innerHTML = '';
+  setNotesStatus('⏳ Cargando apuntes desde GitHub…', 'info');
+
+  const branch = cfg.branch ? `?ref=${encodeURIComponent(cfg.branch)}` : '';
+  const path = cfg.path ? '/' + cfg.path.split('/').map(encodeURIComponent).join('/') : '';
+  const url = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents${path}${branch}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + cfg.token,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    });
+    if (res.status === 401) { setNotesStatus('❌ Token no válido o sin permisos (401). Revisa el token.', 'error'); return; }
+    if (res.status === 404) { setNotesStatus('❌ No se encuentra el repositorio o la carpeta (404). Revisa owner, repo y carpeta.', 'error'); return; }
+    if (res.status === 403) { setNotesStatus('❌ Acceso denegado o límite de peticiones (403).', 'error'); return; }
+    if (!res.ok) { setNotesStatus('❌ Error al consultar GitHub (' + res.status + ').', 'error'); return; }
+
+    const data = await res.json();
+    if (!Array.isArray(data)) { setNotesStatus('La ruta indicada no es una carpeta.', 'error'); return; }
+
+    notesItems = data
+      .filter(f => f.type === 'file' && IMG_EXT.includes((f.name.split('.').pop() || '').toLowerCase()))
+      .map(f => ({ name: f.name, url: f.download_url, ...parseNoteName(f.name) }))
+      .sort((a, b) => (a.order - b.order) || a.title.localeCompare(b.title, 'es'));
+
+    notesLoaded = true;
+    renderNotesGallery();
+  } catch (e) {
+    setNotesStatus('❌ No se pudo conectar con GitHub. Revisa tu conexión.', 'error');
+  }
+}
+
+function renderNotesGallery() {
+  const gallery = document.getElementById('notes-gallery');
+  if (!notesItems.length) {
+    setNotesStatus('No hay imágenes en esta carpeta. Sube fotos a tu repositorio (con nombres como «01 Principios.jpg») y pulsa Actualizar.', 'info');
+    gallery.innerHTML = '';
+    return;
+  }
+  setNotesStatus('', '');
+  gallery.innerHTML = '';
+  notesItems.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'note-card';
+    card.onclick = () => openLightbox(i);
+    const orderLabel = item.order === Infinity ? '–' : item.order;
+    card.innerHTML = `
+      <img class="note-thumb" loading="lazy" src="${item.url}" alt="${item.title}">
+      <div class="note-meta">
+        <span class="note-order">${orderLabel}</span>
+        <span class="note-title">${item.title}</span>
+      </div>`;
+    gallery.appendChild(card);
+  });
+}
+
+// ── Visor a pantalla completa ──
+function openLightbox(i) {
+  lightboxIndex = i;
+  const item = notesItems[i];
+  document.getElementById('lightbox-img').src = item.url;
+  document.getElementById('lightbox-caption').textContent =
+    (item.order === Infinity ? '' : item.order + '. ') + item.title;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function closeLightbox(e) {
+  // Solo cierra si se pulsa el fondo, la X o Esc (no la propia imagen)
+  if (e && e.target && e.target.tagName === 'IMG') return;
+  document.getElementById('lightbox').classList.remove('show');
+  lightboxIndex = -1;
+}
+
+function navLightbox(e, dir) {
+  if (e) e.stopPropagation();
+  if (!notesItems.length) return;
+  lightboxIndex = (lightboxIndex + dir + notesItems.length) % notesItems.length;
+  openLightbox(lightboxIndex);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('show')) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft') navLightbox(null, -1);
+  else if (e.key === 'ArrowRight') navLightbox(null, 1);
+});
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;

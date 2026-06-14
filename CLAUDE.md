@@ -68,6 +68,7 @@ El fichero tiene tres bloques secuenciales:
 - **Examen**: temporizador en tiempo real con alertas de color (amarillo < 10 min, rojo < 3 min), navegación libre entre preguntas, marcado de respuestas
 - **Resultados**: puntuación %, APROBADO/SUSPENDIDO (umbral 65%), estadísticas, revisión completa de respuestas con explicaciones
 - **Historial**: guardado en `localStorage`, con opción de borrar
+- **Apuntes**: pantalla `screen-notes` que muestra una galería de fotos de apuntes leídas desde un **repositorio privado de GitHub** (solo lectura, vía API `contents`). La app no sube fotos: el usuario las sube por su cuenta (web/móvil) al repo. Configuración (owner, repo, carpeta, rama, token PAT fine-grained) guardada en `localStorage` bajo `prince2_notes_config`. Cada foto se **ordena y titula a partir del nombre del fichero** (p. ej. `01 Principios.jpg` → orden 1, título "Principios"; los `_` se convierten en espacios). Incluye visor a pantalla completa (lightbox) con navegación por teclado (←/→/Esc). Las imágenes deben estar en formato web (jpg/png/webp/gif/bmp/svg); HEIC del iPhone no se renderiza.
 
 ## Contexto del examen real PRINCE2 7 Foundation
 
