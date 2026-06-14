@@ -4326,7 +4326,7 @@ async function fetchNotes() {
       }
     });
     if (res.status === 401) { setNotesStatus('❌ Token no válido o sin permisos (401). Revisa el token.', 'error'); return; }
-    if (res.status === 404) { setNotesStatus('❌ No se encuentra el repositorio o la carpeta (404). Revisa owner, repo y carpeta.', 'error'); return; }
+    if (res.status === 404) { setNotesStatus('❌ Error 404: no se encuentra el contenido. Causas habituales:<br>1) El repositorio está <strong>vacío</strong> → sube al menos una foto.<br>2) El token <strong>no tiene acceso a ese repo</strong> (debe ser «Only select repositories → apuntes-prince2», Contents: Read).<br>3) Owner, repo o carpeta mal escritos.', 'error'); return; }
     if (res.status === 403) { setNotesStatus('❌ Acceso denegado o límite de peticiones (403).', 'error'); return; }
     if (!res.ok) { setNotesStatus('❌ Error al consultar GitHub (' + res.status + ').', 'error'); return; }
 
